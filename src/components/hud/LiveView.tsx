@@ -81,6 +81,7 @@ export function LiveView({
   ];
 
   const halfFov = size.w / 2 / pxPerDeg;
+  const compact = size.w < 600; // small preview (e.g. mission control camera): labels only for the target
 
   return (
     <div ref={ref} className="absolute inset-0 overflow-hidden">
@@ -119,15 +120,18 @@ export function LiveView({
               className="absolute flex -translate-x-1/2 -translate-y-full flex-col items-center"
               style={{ left: sx, top: sy, opacity: 0.55 + near * 0.45 }}
             >
-              <span
-                className={cn(
-                  "whitespace-nowrap rounded-sm border bg-background/75 px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider",
-                  KIND_CLASS[m.kind],
-                  m.kind === "next" && "hud-glow text-xs",
-                )}
-              >
-                {m.label} · {d >= 1000 ? `${(d / 1000).toFixed(2)} km` : `${Math.round(d)} m`}
-              </span>
+              {(!compact || m.kind === "next") && (
+                <span
+                  className={cn(
+                    "whitespace-nowrap rounded-sm border bg-background/75 px-1.5 py-0.5 font-mono uppercase tracking-wider",
+                    KIND_CLASS[m.kind],
+                    compact ? "text-[9px]" : "text-[10px]",
+                    m.kind === "next" && !compact && "hud-glow text-xs",
+                  )}
+                >
+                  {m.label} · {d >= 1000 ? `${(d / 1000).toFixed(2)} km` : `${Math.round(d)} m`}
+                </span>
+              )}
               <span className={cn("h-5 w-px border-l", KIND_CLASS[m.kind])} />
               <span className={cn("size-2 rotate-45 border", KIND_CLASS[m.kind])} />
             </div>

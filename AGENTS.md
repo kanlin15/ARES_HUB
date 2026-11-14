@@ -32,3 +32,4 @@ use the editor.
 ## Project rules
 - Mission data, alert thresholds and slope levels live in `src/lib/mission.ts` as pure functions with tests beside them — keeps rules testable and in one place.
 - Samples and geological points are stored on-device in IndexedDB (`src/lib/field-log.ts`, photos downscaled to JPEG data URLs) — works offline with no login; move to Lovable Cloud if logs must be shared across devices.
+- Visor (`/`) and mission control (`/control`) share one EVA state through `src/lib/eva-link.ts`: a Web-Locks-elected leader tab runs the pure engine (`src/lib/eva-engine.ts`) and broadcasts state over BroadcastChannel; other tabs send commands — same-computer sync with no backend.
