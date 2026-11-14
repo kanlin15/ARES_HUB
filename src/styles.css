@@ -293,6 +293,20 @@
   }
 }
 
+@keyframes visor-walk {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 6px;
+  }
+}
+
+.visor-walk {
+  animation: visor-walk 0.9s ease-in-out infinite;
+}
+
 @keyframes reticle-spin {
   to {
     transform: rotate(360deg);
