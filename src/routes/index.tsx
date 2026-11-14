@@ -179,7 +179,6 @@ function AresVisor() {
             </header>
 
             <AlertBanner alerts={alerts} />
-            <CommsBanner message={eva.message} onReceived={() => dispatch({ type: "messageReceived", at: Date.now() })} />
 
             <div className="grid flex-1 grid-cols-1 items-center gap-6 lg:min-h-0 lg:grid-cols-[minmax(260px,320px)_1fr_minmax(260px,340px)]">
               <div className="order-2 lg:order-1">
@@ -191,6 +190,7 @@ function AresVisor() {
                 </CenterHud>
               </div>
               <div className="order-3 space-y-3">
+                <CommsBanner message={eva.message} onReceived={() => dispatch({ type: "messageReceived", at: Date.now() })} />
                 <MiniMap
                   x={eva.x}
                   y={eva.y}
