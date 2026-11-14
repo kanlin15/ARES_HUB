@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { positionAt, resourceStatus, ROUTE, ROUTE_LENGTH, slopeLevel } from "./mission";
+import { positionAt, resourceStatus, ROUTE, ROUTE_LENGTH, slopeLevel, waypointAt } from "./mission";
 
 describe("slope risk", () => {
   it("flags 32° (Olympus Mons basal scarp) as extreme danger", () => {
@@ -31,6 +31,6 @@ describe("route position", () => {
     expect(positionAt(0).x).toBe(0);
     const end = positionAt(ROUTE_LENGTH);
     expect(end.finished).toBe(true);
-    expect(end.x).toBeCloseTo(ROUTE[ROUTE.length - 1].x);
+    expect(end.x).toBeCloseTo(waypointAt(ROUTE.length - 1).x);
   });
 });

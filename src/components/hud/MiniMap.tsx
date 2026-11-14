@@ -1,6 +1,6 @@
 import { Map as MapIcon } from "lucide-react";
 import type { GeoPoint, Sample } from "@/lib/field-log";
-import { ROUTE, slopeLevel, type Position } from "@/lib/mission";
+import { ROUTE, slopeLevel, waypointAt, type Position } from "@/lib/mission";
 
 const PAD = 160;
 const xs = ROUTE.map((w) => w.x);
@@ -46,7 +46,7 @@ export function MiniMap({
         </defs>
         <rect width={W} height={H} fill="url(#grid)" />
         {ROUTE.slice(1).map((wp, i) => {
-          const a = ROUTE[i];
+          const a = waypointAt(i);
           return (
             <line
               key={wp.id}

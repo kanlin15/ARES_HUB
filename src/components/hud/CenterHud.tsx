@@ -1,10 +1,10 @@
 import { Crosshair, Gem, Mountain } from "lucide-react";
-import { ROUTE, slopeLevel, type Position } from "@/lib/mission";
+import { slopeLevel, waypointAt, type Position } from "@/lib/mission";
 import { cn } from "@/lib/utils";
 
 export function CenterHud({ position }: { position: Position }) {
   const level = slopeLevel(position.slope);
-  const next = ROUTE[position.nextIndex];
+  const next = waypointAt(position.nextIndex);
   return (
     <div className="pointer-events-none relative flex flex-col items-center gap-6">
       {/* Reticle */}

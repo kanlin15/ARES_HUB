@@ -28,6 +28,11 @@ export const ROUTE: Waypoint[] = [
   { id: "WP-5", name: "Mirador del escarpe", x: 2240, y: 1880, slope: 12, terrain: "Terraza de sulfatos", mineral: "Yeso (sulfatos)" },
 ];
 
+/** Safe waypoint lookup (index is clamped to the route). */
+export function waypointAt(i: number): Waypoint {
+  return ROUTE[Math.min(ROUTE.length - 1, Math.max(0, i))] as Waypoint;
+}
+
 export function slopeLevel(deg: number): { status: Status; label: string } {
   if (deg >= 30) return { status: "critico", label: "PELIGRO EXTREMO" };
   if (deg >= 25) return { status: "critico", label: "ALTO RIESGO" };
@@ -43,7 +48,7 @@ export function toLatLon(x: number, y: number) {
 
 const segLen = (a: Waypoint, b: Waypoint) => Math.hypot(b.x - a.x, b.y - a.y);
 
-export const ROUTE_LENGTH = ROUTE.slice(1).reduce((s, wp, i) => s + segLen(ROUTE[i], wp), 0);
+export const ROUTE_LENGTH = ROUTE.slice(1).reduce((s, wp, i) => s + segLen(waypointAt(i), wp), 0);
 
 export interface Position {
   x: number;
@@ -65,8 +70,8 @@ export interface Position {
 export function positionAt(distance: number): Position {
   let left = Math.max(0, distance);
   for (let i = 1; i < ROUTE.length; i++) {
-    const a = ROUTE[i - 1];
-    const b = ROUTE[i];
+    const a = waypointAt(i - 1);
+    const b = waypointAt(i);
     const len = segLen(a, b);
     const heading = ((Math.atan2(b.x - a.x, b.y - a.y) * 180) / Math.PI + 360) % 360;
     if (left <= len || i === ROUTE.length - 1) {
@@ -89,7 +94,7 @@ export function positionAt(distance: number): Position {
     left -= len;
   }
   // Unreachable with a route of 2+ waypoints.
-  const last = ROUTE[ROUTE.length - 1];
+  const last = waypointAt(ROUTE.length - 1);
   return { x: last.x, y: last.y, ...toLatLon(last.x, last.y), nextIndex: ROUTE.length - 1, toNext: 0, heading: 0, slope: last.slope, terrain: last.terrain, mineral: last.mineral, finished: true };
 }
 

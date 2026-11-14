@@ -16,7 +16,7 @@ import { SamplesSheet } from "@/components/hud/SamplesSheet";
 import { useEvaSim } from "@/hooks/use-eva-sim";
 import { useFieldLog } from "@/hooks/use-field-log";
 import type { FieldLocation } from "@/lib/field-log";
-import { formatCoord, formatMissionTime, RESOURCES, resourceStatus, ROUTE, ROUTE_LENGTH, slopeLevel } from "@/lib/mission";
+import { formatCoord, formatMissionTime, RESOURCES, resourceStatus, ROUTE_LENGTH, slopeLevel, waypointAt } from "@/lib/mission";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -57,7 +57,7 @@ function AresHud() {
     lon: position.lon,
     x: position.x,
     y: position.y,
-    waypoint: `${ROUTE[position.nextIndex - 1].id} → ${ROUTE[position.nextIndex].id}`,
+    waypoint: `${waypointAt(position.nextIndex - 1).id} → ${waypointAt(position.nextIndex).id}`,
     terrain: position.terrain,
     slope: position.slope,
     missionTime: sim.missionTime,
