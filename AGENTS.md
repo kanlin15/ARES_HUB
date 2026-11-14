@@ -28,3 +28,7 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+- Mission data, alert thresholds and slope levels live in `src/lib/mission.ts` as pure functions with tests beside them — keeps rules testable and in one place.
+- Samples and geological points are stored on-device in IndexedDB (`src/lib/field-log.ts`, photos downscaled to JPEG data URLs) — works offline with no login; move to Lovable Cloud if logs must be shared across devices.

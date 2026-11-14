@@ -16,12 +16,20 @@ const buttonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        hud: "hud-panel font-mono text-xs uppercase tracking-[0.14em] text-primary hover:bg-primary/15 hover:shadow-[var(--glow-primary)]",
+        hudAccent:
+          "rounded-sm border border-accent bg-accent/20 font-mono text-xs uppercase tracking-[0.14em] text-accent hover:bg-accent hover:text-accent-foreground",
+        hudDanger:
+          "rounded-sm border border-destructive/70 bg-destructive/15 font-mono text-xs uppercase tracking-[0.14em] text-destructive hover:bg-destructive hover:text-destructive-foreground",
+        hudSolid:
+          "rounded-sm bg-primary font-mono text-xs uppercase tracking-[0.14em] text-primary-foreground shadow-[var(--glow-primary)] hover:bg-primary/85",
       },
       size: {
         default: "h-9 px-4 py-2",
         sm: "h-8 rounded-md px-3 text-xs",
         lg: "h-10 rounded-md px-8",
         icon: "h-9 w-9",
+        dock: "h-10 px-3",
       },
     },
     defaultVariants: {
