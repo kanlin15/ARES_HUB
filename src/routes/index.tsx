@@ -143,7 +143,7 @@ function AresVisor() {
 
         {/* HUD layer */}
         <div
-          className={cn("absolute inset-0 touch-pan-y overflow-y-auto", drag.current ? "cursor-grabbing" : "cursor-grab")}
+          className="absolute inset-0 cursor-grab touch-pan-y overflow-y-auto active:cursor-grabbing"
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={endDrag}
