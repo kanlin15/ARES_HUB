@@ -1,6 +1,7 @@
 import { Map as MapIcon } from "lucide-react";
 import type { GeoPoint, Sample } from "@/lib/field-log";
-import { ROUTE, slopeLevel, waypointAt, type Position } from "@/lib/mission";
+import { VIEW_FOV } from "@/lib/eva-engine";
+import { HAZARDS, ROUTE, slopeLevel, waypointAt } from "@/lib/mission";
 
 const PAD = 160;
 const xs = ROUTE.map((w) => w.x);
@@ -22,14 +23,27 @@ const STROKE = {
 };
 
 export function MiniMap({
-  position,
+  x,
+  y,
+  yaw,
+  heading,
+  nextIndex,
   samples,
   geoPoints,
 }: {
-  position: Position;
+  x: number;
+  y: number;
+  yaw: number;
+  heading: number;
+  nextIndex: number;
   samples: Sample[];
   geoPoints: GeoPoint[];
 }) {
+  const position = { x, y, nextIndex, heading };
+  const cone = (deg: number) => {
+    const r = (deg * Math.PI) / 180;
+    return `${sx(x) + Math.sin(r) * 420},${sy(y) - Math.cos(r) * 420}`;
+  };
   return (
     <section className="hud-panel p-4" aria-label="Mapa táctico de la ruta">
       <header className="mb-2 flex items-center justify-between">
@@ -45,6 +59,16 @@ export function MiniMap({
           </pattern>
         </defs>
         <rect width={W} height={H} fill="url(#grid)" />
+        <polygon
+          points={`${sx(x)},${sy(y)} ${cone(yaw - VIEW_FOV / 2)} ${cone(yaw + VIEW_FOV / 2)}`}
+          fill="var(--color-primary)"
+          opacity="0.12"
+        />
+        {HAZARDS.map((h) => (
+          <circle key={h.id} cx={sx(h.x)} cy={sy(h.y)} r={h.radius} fill="var(--color-destructive)" opacity="0.12" stroke="var(--color-destructive)" strokeOpacity="0.5" strokeWidth="4" strokeDasharray="16 12">
+            <title>{h.label}</title>
+          </circle>
+        ))}
         {ROUTE.slice(1).map((wp, i) => {
           const a = waypointAt(i);
           return (
