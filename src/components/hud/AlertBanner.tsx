@@ -1,12 +1,6 @@
 import { AlertTriangle, ShieldCheck } from "lucide-react";
-import type { Status } from "@/lib/mission";
+import type { HudAlert } from "@/lib/alerts";
 import { cn } from "@/lib/utils";
-
-export interface HudAlert {
-  id: string;
-  status: Exclude<Status, "nominal">;
-  message: string;
-}
 
 export function AlertBanner({ alerts }: { alerts: HudAlert[] }) {
   if (alerts.length === 0) {
@@ -16,7 +10,7 @@ export function AlertBanner({ alerts }: { alerts: HudAlert[] }) {
       </div>
     );
   }
-  const sorted = [...alerts].sort((a, b) => (a.status === b.status ? 0 : a.status === "critico" ? -1 : 1));
+  const sorted = alerts.slice(0, 4);
   return (
     <div role="alert" className="flex flex-wrap justify-center gap-2">
       {sorted.map((a) => (
