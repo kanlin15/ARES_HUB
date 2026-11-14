@@ -13,6 +13,8 @@ export interface Waypoint {
   terrain: string;
   /** Mineral flagged by the simulated CRISM overlay along this segment. */
   mineral: string;
+  /** Elevation in metres (illustrative MOLA-like profile). */
+  elevation: number;
 }
 
 /** Olympus Mons basal scarp, east flank (planetocentric, east-positive longitude). */
@@ -20,12 +22,12 @@ export const ORIGIN = { lat: 18.35, lon: 228.9 };
 const METRES_PER_DEG_LAT = 59_274; // Mars mean radius 3389.5 km
 
 export const ROUTE: Waypoint[] = [
-  { id: "WP-0", name: "Hábitat Ares Base", x: 0, y: 0, slope: 2, terrain: "Llanura de polvo", mineral: "Regolito" },
-  { id: "WP-1", name: "Campo de bloques", x: 420, y: 310, slope: 8, terrain: "Bloques basálticos", mineral: "Basalto" },
-  { id: "WP-2", name: "Canal de lava", x: 980, y: 520, slope: 14, terrain: "Canal de lava colapsado", mineral: "Olivino" },
-  { id: "WP-3", name: "Talud del escarpe", x: 1460, y: 980, slope: 22, terrain: "Talud de derrubios", mineral: "Andesita" },
-  { id: "WP-4", name: "Cornisa basal", x: 1720, y: 1560, slope: 32, terrain: "Escarpe basal", mineral: "Hematita" },
-  { id: "WP-5", name: "Mirador del escarpe", x: 2240, y: 1880, slope: 12, terrain: "Terraza de sulfatos", mineral: "Yeso (sulfatos)" },
+  { id: "WP-0", name: "Hábitat Ares Base", x: 0, y: 0, slope: 2, terrain: "Llanura de polvo", mineral: "Regolito", elevation: 1650 },
+  { id: "WP-1", name: "Campo de bloques", x: 420, y: 310, slope: 8, terrain: "Bloques basálticos", mineral: "Basalto", elevation: 1700 },
+  { id: "WP-2", name: "Canal de lava", x: 980, y: 520, slope: 14, terrain: "Canal de lava colapsado", mineral: "Olivino", elevation: 1790 },
+  { id: "WP-3", name: "Talud del escarpe", x: 1460, y: 980, slope: 22, terrain: "Talud de derrubios", mineral: "Andesita", elevation: 1990 },
+  { id: "WP-4", name: "Cornisa basal", x: 1720, y: 1560, slope: 32, terrain: "Escarpe basal", mineral: "Hematita", elevation: 2320 },
+  { id: "WP-5", name: "Mirador del escarpe", x: 2240, y: 1880, slope: 12, terrain: "Terraza de sulfatos", mineral: "Yeso (sulfatos)", elevation: 2420 },
 ];
 
 /** Safe waypoint lookup (index is clamped to the route). */
@@ -171,4 +173,89 @@ export function formatMissionTime(sec: number) {
   const m = Math.floor((sec % 3600) / 60);
   const s = Math.floor(sec % 60);
   return [h, m, s].map((n) => String(n).padStart(2, "0")).join(":");
+}
+
+/* ---------- Free movement on the local map ---------- */
+
+export const MAP_BOUNDS = { minX: -400, maxX: 2700, minY: -400, maxY: 2300 };
+/** Metres from the suggested route before an off-route warning. */
+export const OFF_ROUTE_LIMIT = 150;
+/** Metres to a waypoint to count it as reached. */
+export const WAYPOINT_REACH = 40;
+
+export interface Hazard {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+  radius: number;
+}
+
+export const HAZARDS: Hazard[] = [
+  { id: "HZ-1", label: "Campo de rocas", x: 700, y: 470, radius: 120 },
+  { id: "HZ-2", label: "Remolino de polvo", x: 1150, y: 640, radius: 160 },
+  { id: "HZ-3", label: "Desprendimientos", x: 1640, y: 1300, radius: 150 },
+  { id: "HZ-4", label: "Fractura", x: 2000, y: 1760, radius: 110 },
+];
+
+export const wrap360 = (d: number) => ((d % 360) + 360) % 360;
+export const wrap180 = (d: number) => wrap360(d + 180) - 180;
+export const distance = (x1: number, y1: number, x2: number, y2: number) => Math.hypot(x2 - x1, y2 - y1);
+/** Bearing from point 1 to point 2: 0 = north, clockwise. */
+export const bearing = (x1: number, y1: number, x2: number, y2: number) =>
+  wrap360((Math.atan2(x2 - x1, y2 - y1) * 180) / Math.PI);
+
+export interface PlaceContext {
+  lat: number;
+  lon: number;
+  /** Index of the waypoint that ends the nearest route segment. */
+  segment: number;
+  slope: number;
+  terrain: string;
+  mineral: string;
+  elevation: number;
+  /** Distance (m) to the suggested route. */
+  offRoute: number;
+  /** Distance (m) along the route of the nearest point. */
+  along: number;
+  hazard: Hazard | null;
+  hazardDist: number;
+}
+
+/** Terrain context of any map position, taken from the nearest route segment. */
+export function contextAt(x: number, y: number): PlaceContext {
+  let best = { d: Infinity, i: 1, t: 0, along: 0 };
+  let acc = 0;
+  for (let i = 1; i < ROUTE.length; i++) {
+    const a = waypointAt(i - 1);
+    const b = waypointAt(i);
+    const len = segLen(a, b);
+    const t = Math.min(1, Math.max(0, ((x - a.x) * (b.x - a.x) + (y - a.y) * (b.y - a.y)) / (len * len)));
+    const d = distance(x, y, a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t);
+    if (d < best.d) best = { d, i, t, along: acc + len * t };
+    acc += len;
+  }
+  const a = waypointAt(best.i - 1);
+  const b = waypointAt(best.i);
+  let hazard: Hazard | null = null;
+  let hazardDist = Infinity;
+  for (const h of HAZARDS) {
+    const d = distance(x, y, h.x, h.y);
+    if (d < hazardDist) {
+      hazardDist = d;
+      hazard = h;
+    }
+  }
+  return {
+    ...toLatLon(x, y),
+    segment: best.i,
+    slope: b.slope,
+    terrain: b.terrain,
+    mineral: b.mineral,
+    elevation: Math.round(a.elevation + (b.elevation - a.elevation) * best.t),
+    offRoute: best.d,
+    along: best.along,
+    hazard,
+    hazardDist,
+  };
 }
