@@ -1,11 +1,14 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { computeAlerts } from "./alerts";
 import { applyCommand, INITIAL_EVA, step } from "./eva-engine";
-import { contextAt, waypointAt } from "./mission";
+import { contextAt, setActiveMap, waypointAt } from "./mission";
 
 const still = () => 0.5;
 
 describe("live movement", () => {
+  beforeEach(() => {
+    setActiveMap("jezero", 0);
+  });
   it("walks forward along the heading while W is held", () => {
     let s = { ...INITIAL_EVA, heading: 0, speed: 1 };
     s = applyCommand(s, { type: "input", value: { forward: 1, turn: 0, strafe: 0 } });
@@ -34,6 +37,10 @@ describe("live movement", () => {
 });
 
 describe("terrain alerts", () => {
+  beforeEach(() => {
+    setActiveMap("jezero", 0);
+  });
+
   it("the WP-4 segment reads 32° extreme danger", () => {
     const wp4 = waypointAt(4);
     expect(contextAt(wp4.x - 10, wp4.y - 20).slope).toBe(32);

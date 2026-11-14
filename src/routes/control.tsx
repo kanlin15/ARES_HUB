@@ -26,7 +26,7 @@ import { ResourceMonitor } from "@/components/hud/ResourceMonitor";
 import { useEva } from "@/hooks/use-eva";
 import { useFieldLog } from "@/hooks/use-field-log";
 import { isStorm, viewYaw, WALK_SPEED } from "@/lib/eva-engine";
-import { distance, formatCoord, formatMissionTime, slopeLevel, waypointAt } from "@/lib/mission";
+import { distance, formatCoord, formatMissionTime, getCurrentMap, getMissionRoutes, MAPS, setActiveMap, slopeLevel, waypointAt, type MissionMapId } from "@/lib/mission";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/control")({
@@ -74,6 +74,10 @@ function ControlCenter() {
   const log = useFieldLog();
   const [layers, setLayers] = useState<Set<MapLayer>>(new Set(["pendiente", "crism", "peligros", "ruta", "reticula"]));
   const [msg, setMsg] = useState("");
+  const currentMap = getCurrentMap();
+  const [mapId, setMapId] = useState<MissionMapId>(currentMap.id);
+  const [routeIndex, setRouteIndex] = useState<number>(currentMap.defaultRouteIndex);
+  const routeOptions = getMissionRoutes(mapId);
 
   const yaw = viewYaw(eva);
   const next = waypointAt(eva.nextIndex);
@@ -98,6 +102,19 @@ function ControlCenter() {
     setMsg("");
   };
 
+  const handleMapChange = (nextMapId: string) => {
+    const map = setActiveMap(nextMapId as MissionMapId, 0);
+    setMapId(map.id);
+    setRouteIndex(map.defaultRouteIndex);
+    dispatch({ type: "reset" });
+  };
+
+  const handleRouteChange = (nextIndex: number) => {
+    setActiveMap(mapId, nextIndex);
+    setRouteIndex(nextIndex);
+    dispatch({ type: "reset" });
+  };
+
   return (
     <main className="min-h-screen bg-background px-4 py-4 lg:px-8">
       <div className="mx-auto max-w-[1700px] space-y-4">
@@ -112,6 +129,37 @@ function ControlCenter() {
             <Link to="/" target="_blank" className="font-mono text-[10px] uppercase tracking-wider text-primary underline-offset-4 hover:underline">
               Abrir visor ↗
             </Link>
+          </div>
+          <div className="flex flex-col gap-1">
+            <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Zona activa</div>
+            <div className="font-mono text-[11px] text-primary">{currentMap.label}</div>
+            <div className="max-w-[440px] text-[10px] text-muted-foreground">{currentMap.subtitle}</div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 rounded-sm border border-border bg-background/60 px-2 py-1.5 font-mono text-[10px] uppercase tracking-wider shadow-inner">
+            <label className="flex items-center gap-2">
+              <span className="text-muted-foreground">Mapa</span>
+              <select
+                value={mapId}
+                onChange={(e) => handleMapChange(e.target.value)}
+                className="rounded-sm border border-border bg-background px-2 py-1 text-primary outline-none"
+              >
+                {MAPS.map((map) => (
+                  <option key={map.id} value={map.id}>{map.label}</option>
+                ))}
+              </select>
+            </label>
+            <label className="flex items-center gap-2">
+              <span className="text-muted-foreground">Ruta</span>
+              <select
+                value={String(routeIndex)}
+                onChange={(e) => handleRouteChange(Number(e.target.value))}
+                className="rounded-sm border border-border bg-background px-2 py-1 text-primary outline-none"
+              >
+                {routeOptions.map((_, index) => (
+                  <option key={`${mapId}-${index}`} value={String(index)}>Ruta {index + 1}</option>
+                ))}
+              </select>
+            </label>
           </div>
           <div className="flex gap-6 font-mono">
             <div>

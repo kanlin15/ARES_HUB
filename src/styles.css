@@ -196,6 +196,12 @@
     box-shadow: inset 0 0 160px 30px oklch(0.66 0.23 25 / 0.45);
     animation: alert-pulse 1.2s ease-in-out infinite;
   }
+  .visor-compact .visor-tint,
+  .visor-compact .visor-scanlines,
+  .visor-compact .visor-sweep,
+  .visor-compact .visor-reflection {
+    opacity: 0.8;
+  }
 
   /* HUD glass panel with corner brackets */
   .hud-panel {
@@ -225,6 +231,34 @@
     right: -1px;
     border-bottom: 2px solid;
     border-right: 2px solid;
+  }
+  .panel-minimize-button {
+    position: relative;
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    padding: 0.22rem 0 0.18rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    opacity: 0.9;
+    transition: opacity 0.2s ease;
+  }
+  .panel-minimize-button:hover {
+    opacity: 1;
+  }
+  .panel-minimize-line {
+    display: block;
+    width: 56%;
+    max-width: 110px;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--color-primary) 60%, transparent);
+  }
+  .panel-collapsed {
+    min-height: 1.25rem;
   }
   .hud-label {
     font-family: var(--font-mono);
